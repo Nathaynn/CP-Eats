@@ -74,12 +74,13 @@ def get_foods(venue: str, driver: webdriver) -> List[Dict[str, str]]:
 
                 if tab_times:
                     for r in tab_times:
+                        print(len(tab_times))
                         ActionChains(driver).click(r).perform()
                         sleep(3)
-                        food_tables = driver.find_element(By.CSS_SELECTOR, ".tab-pane.active").find_elements(By.CSS_SELECTOR, "div > div:not(.row):not(.menu-period-dropdowns) > div")
+                        food_tables = driver.find_element(By.CSS_SELECTOR, "[role='tabpanel']").find_elements(By.CSS_SELECTOR, "div > div:not(.row) > div > div > table")
                         for n in food_tables:
-                            foods = n.find_elements(By.CSS_SELECTOR, "div > table > tbody > tr ")
-                            
+                            foods = n.find_elements(By.CSS_SELECTOR, "tbody > tr ")
+                            print(len(food_tables))
                             for m in foods:
                                 nt = m.find_element(By.CSS_SELECTOR, "td > div > span > div > button")
                                 food_name = m.find_element(By.CSS_SELECTOR, "td > div > span > strong").get_attribute("innerHTML").strip()
