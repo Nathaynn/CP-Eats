@@ -5,7 +5,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions 
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver import ActionChains
-
+from selenium.webdriver.chrome.service import Service
 
 from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
@@ -21,6 +21,7 @@ class CustomError(Exception):
 service = Service(ChromeDriverManager().install())
 opt = webdriver.ChromeOptions()
 opt.add_argument("--log-level=1")
+
 driver = webdriver.Chrome(service=service, options=opt)
 
 # Website: https://dineoncampus.com/calpoly/whats-on-the-menu
