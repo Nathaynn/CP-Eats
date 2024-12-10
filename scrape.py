@@ -11,6 +11,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from time import sleep
 from typing import List, Dict
 import re
+import requests 
 
 # Custom Error for my own exceptions
 class CustomError(Exception):
@@ -26,6 +27,12 @@ driver = webdriver.Chrome(service=service, options=opt)
 
 # Website: https://dineoncampus.com/calpoly/whats-on-the-menu
 
+
+url_items = "http://localhost:1337/items/"
+url_location = "http://localhost:1337/locations/"
+headers = {
+    "Content-Type": "application.json"
+}
 
 # Return a list of venues with their respective stores
 def get_venues_and_stores(driver: webdriver) -> List[Dict[str, List[str]]]:
@@ -120,9 +127,57 @@ def get_foods(venue: str, driver: webdriver) -> List[Dict[str, str]]:
                                     print(e)
 
                                 ActionChains(driver).click(driver.find_element(By.CSS_SELECTOR, "[aria-label='Close']")).perform()
-                                print({"name" : food_name, "portion" : portion, "calories": calories, "fat" : fat, "carbs": carbs, "protein": protein, "venue": venue, "store": store_name})
-                                food_list.append({"name" : food_name, "portion" : portion, "calories": calories, "fat" : fat, "carbs": carbs, "protein": protein, "venue": venue, "store": store_name})
+                                x = {"name" : food_name, "portion" : portion, "calories": calories, "fat" : fat, "carbs": carbs, "protein": protein, "venue": venue, "store": store_name}
+                                if (x["venue"] == "1901 Marketplace"):
+                                    location_payload = {
+                                        "venue_id": 1,
+                                        "name": x["store"],
+                                        "address": "N"
+                                    }
+                                elif (x["venue"] == "Vista Grande"):
+                                    location_payload = {
+                                        "venue_id": 2,
+                                        "name": x["store"],
+                                        "address": "N"
+                                    }
+                                elif (x["venue"] == "Poly Canyon Village"):
+                                    location_payload = {
+                                        "venue_id": 3,
+                                        "name": x["store"],
+                                        "address": "N"
+                                    }
+                                response_location = requests.post(url_location, json=location_payload)
+                                if response_location.ok:
+                                    print("Success:", response_location.json())
+                                
+                                response_id = requests.post(url_location + "getId/", json={"name" : x["store"]})
+                                if response_id.ok:
+                                    print("Success:", response_id.json())
+                                else:
+                                    print("Failed:", response_id.status_code, response_id.text)
+                                food_payload = {
+                                    "location_id": response_id.json().get("id"),
+                                    "item_name": x["name"],     
+                                    "calories": int(x["calories"]),  
+                                    "protein": int(x["protein"]),    
+                                    "fat": int(x["fat"]),            
+                                    "carbs": int(x["carbs"])         
+                                }
+  
+                                response_food = requests.post(url_items, json=food_payload)
+                                if response_food.ok:
+                                    print("Success:", response_food.json)
+                                else:
+                                    print(x)
+                                    print("Failed:", response_food.status_code, response_food.text)
                                 sleep(1)
 
-                
+
+# 1901: ID = 1
 get_foods("1901 Marketplace", driver)
+
+# Vista Grande: ID = 2
+get_foods("Vista Grande", driver)
+
+# PCV: ID = 3
+get_foods("Poly Canyon Village", driver)
